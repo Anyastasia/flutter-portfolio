@@ -94,12 +94,12 @@ class _HomeState extends State<Home> {
       body: LayoutBuilder(
           builder: (BuildContext builder, BoxConstraints constraints) {
         if (constraints.maxWidth <= 400) {
-          return _mobileLayout(futureAbout);
+          return _mobileLayout(futureAbout, futureWord);
         } else {
           // ignore: avoid_print
           // print(constraints.maxWidth);
           // return _wideLayout();
-          return _mobileLayout(futureAbout);
+          return _mobileLayout(futureAbout, futureWord);
         }
       }),
       bottomNavigationBar: NavigationBar(
@@ -119,7 +119,7 @@ class _HomeState extends State<Home> {
   }
 
 // Future<Word> futureWord
-  Widget _mobileLayout(Future<About> futureAbout) {
+  Widget _mobileLayout(Future<About> futureAbout, Future<Word> futureWord) {
     return <Widget>[
       Column(
         children: [
@@ -203,7 +203,7 @@ class _HomeState extends State<Home> {
               future: futureWord,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return Text(snapshot.data!.word[0]);
+                  return Text(snapshot.data!.word);
                 } else if (snapshot.hasError) {
                   return Text('${snapshot.error}');
                 }
