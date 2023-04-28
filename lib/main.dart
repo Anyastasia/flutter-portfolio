@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MaterialApp(
@@ -76,11 +75,14 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late Future<About> futureAbout;
+  late Future<Word> futureWord;
 
   @override
   void initState() {
     super.initState();
+
     futureAbout = fetchData();
+    futureWord = fetchWord();
   }
 
   @override
@@ -111,10 +113,12 @@ class _HomeState extends State<Home> {
             NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
             NavigationDestination(
                 icon: Icon(Icons.account_circle), label: 'About'),
+            NavigationDestination(icon: Icon(Icons.home), label: 'Random Word'),
           ]),
     );
   }
 
+// Future<Word> futureWord
   Widget _mobileLayout(Future<About> futureAbout) {
     return <Widget>[
       Column(
@@ -184,8 +188,6 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               ));
-
-              return Text(snapshot.data!.name);
             } else if (snapshot.hasError) {
               return Text('${snapshot.error}');
             }
@@ -193,7 +195,32 @@ class _HomeState extends State<Home> {
             return const CircularProgressIndicator();
           },
         ),
-      ))
+      )),
+      Column(
+        children: [
+          Center(
+            child: FutureBuilder<Word>(
+              future: futureWord,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Text(snapshot.data!.word[0]);
+                } else if (snapshot.hasError) {
+                  return Text('${snapshot.error}');
+                }
+
+                return const CircularProgressIndicator();
+              },
+            ),
+          ),
+        ],
+      ),
+      // Column(
+      //   children: const [
+      //     Center(
+      //       child: Text('Free space'),
+      //     )
+      //   ],
+      // ),
     ][currentBottomAppBarIndex];
   }
 }
@@ -228,12 +255,22 @@ class About {
   }
 }
 
+class Word {
+  final String word;
+  Word({
+    required this.word,
+  });
+
+  factory Word.fromJson(String json) {
+    return Word(word: json);
+  }
+}
+
 Future<About> fetchData() async {
   final dio = Dio();
 
-  final response = await dio.get('https://raw.githubusercontent.com/Anyastasia/portfolio/master/files/about.json');
-  // final response = await http.get(Uri.parse(
-  // 'https://raw.githubusercontent.com/Anyastasia/portfolio/master/files/about.json'));
+  final response = await dio.get(
+      'https://raw.githubusercontent.com/Anyastasia/portfolio/master/files/about.json');
   if (response.statusCode == 200) {
     return About.fromJson(jsonDecode(response.data));
   } else {
@@ -241,7 +278,19 @@ Future<About> fetchData() async {
   }
 }
 
+Future<Word> fetchWord() async {
+  final dio = Dio();
 
+  final response = await dio.get('https://random-word-api.herokuapp.com/word');
+
+  // final response = await http.get(Uri.parse(
+  // 'https://raw.githubusercontent.com/Anyastasia/portfolio/master/files/about.json'));
+  if (response.statusCode == 200) {
+    return Word.fromJson(jsonDecode(response.data[0]));
+  } else {
+    throw Exception('Failed to fetch request');
+  }
+}
 
 // class Home extends StatefulWidget {
 //   const Home({super.key, required this.title});
@@ -285,6 +334,3 @@ Future<About> fetchData() async {
 //         ));
 //   }
 // }
-
-
-
